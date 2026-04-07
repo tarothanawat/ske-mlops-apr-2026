@@ -205,7 +205,7 @@ with DAG(
     dag_id="retrain_if_drift_found",
     description="Auto-retrain when data drift is detected",
     start_date=days_ago(1),
-    schedule_interval=timedelta(minutes=60),
+    schedule_interval=timedelta(minutes=10),
     catchup=False,
 ) as dag:
 
