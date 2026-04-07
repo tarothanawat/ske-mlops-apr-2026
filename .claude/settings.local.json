@@ -1,0 +1,20 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker-compose ps:*)",
+      "Bash(docker-compose up:*)",
+      "Bash(pip install:*)",
+      "Bash(python generate_initial_data.py)",
+      "Bash(docker-compose exec:*)",
+      "Bash(docker exec:*)",
+      "Bash(curl -s -u airflow:airflow \"http://localhost:8080/api/v1/dags/pretrain/dagRuns/manual__2026-04-07T14:07:57+00:00/taskInstances/pretrain/logs/1\")",
+      "Bash(curl -s -u airflow:airflow -H \"Accept: text/plain\" \"http://localhost:8080/api/v1/dags/pretrain/dagRuns/manual__2026-04-07T14:07:57%2B00:00/taskInstances/pretrain/logs/1\")",
+      "Bash(curl:*)",
+      "Bash(docker-compose restart:*)",
+      "Bash(gh auth:*)",
+      "Bash(gh secret:*)",
+      "Bash(python3 -c \"import sys,json; runs=json.load\\(sys.stdin\\).get\\('workflow_runs',[]\\); [print\\(f\\\\\"Run #{r['run_number']}: {r['name']} | status={r['status']} | conclusion={r['conclusion']} | url={r['html_url']}\\\\\"\\) for r in runs]\")",
+      "Bash(python3.exe -c \"import sys,json; runs=json.load\\(sys.stdin\\).get\\('workflow_runs',[]\\); [print\\(f\\\\\"Run #{r['run_number']}: {r['name']} | status={r['status']} | conclusion={r['conclusion']} | url={r['html_url']}\\\\\"\\) for r in runs]\")"
+    ]
+  }
+}
