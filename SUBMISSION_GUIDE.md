@@ -1,5 +1,79 @@
 # Assignment Submission Guide
 
+## If You Cloned This Repo — Start Here
+
+Follow these steps in order. Total time: **~30–40 minutes** (mostly waiting).
+
+---
+
+### Step 1 — Prerequisites (~5 min to verify)
+- Docker Desktop installed and **running** with at least 8 GB RAM allocated
+- Python 3.11+ installed
+- Git installed
+
+---
+
+### Step 2 — Start all services (~10 min first time) ⏱️ WAIT HERE
+```bash
+docker-compose up -d
+```
+The first run downloads images and installs ML packages inside the Airflow containers. This takes **5–10 minutes**. Check when ready:
+```bash
+docker-compose ps
+```
+All containers should show `Up` or `healthy`. Do not proceed until they do.
+
+---
+
+### Step 3 — Seed training data (~1 min)
+```bash
+pip install minio pandas numpy
+python generate_initial_data.py
+```
+Expected output: `Uploaded initial_data.csv (20,000 rows)` and `Uploaded data.csv (20,000 rows)`.
+
+---
+
+### Step 4 — Run the pretrain DAG (~5–10 min) ⏱️ WAIT HERE
+1. Open Airflow UI → http://localhost:8080 (login: `airflow` / `airflow`)
+2. Find the `pretrain` DAG → toggle it **ON** → click **Trigger DAG ▶**
+3. Wait until all tasks turn **green** (~5–10 min)
+4. Open MLflow → http://localhost:5005 → **Models → house_price_prediction** → should show stage: **Production**
+
+---
+
+### Step 5 — Trigger retrain (run it twice for the assignment) (~5 min each) ⏱️ WAIT HERE
+1. Airflow UI → `retrain_if_drift_found` DAG → toggle **ON** → click **Trigger DAG ▶**
+2. Wait ~5 min for it to turn green
+3. **Trigger it a second time** (assignment requires at least 2 retrain runs in MLflow)
+4. After the second run completes, restart the serving container:
+```bash
+docker-compose restart model-serving
+```
+
+---
+
+### Step 6 — Update the drift report path for your machine
+The drift report path in screenshot #6 is machine-specific. Find yours at:
+```
+<your-clone-folder>/airflow/drift_reports/data_drift_report.html
+```
+Open it directly in your browser (drag and drop the file onto a browser tab).
+
+---
+
+### Time Summary
+
+| Step | What happens | Time |
+|------|-------------|------|
+| `docker-compose up -d` | Downloads images, installs packages | 5–10 min (first run only) |
+| `generate_initial_data.py` | Generates 20K rows, uploads to MinIO | ~30 sec |
+| Pretrain DAG | Trains 4 models, registers best to MLflow | ~5–10 min |
+| Retrain DAG (×2) | Drift check + retrain + promote | ~5 min each |
+| **Total** | | **~30–40 min** |
+
+---
+
 ## GitHub Secrets — Where to Find Them
 
 The secrets are already configured in your local `docker-compose.yml`. For the GitHub Actions **deploy** job to work, MLflow and MinIO must be publicly reachable. For the **test** and **build** jobs (lint + pytest + Docker image push), no secrets are needed.
@@ -59,9 +133,9 @@ Take a screenshot showing all containers with `Up` / `healthy` status.
 
 ### 6 — Drift report output
 **Where:** After a retrain run completes, the HTML report is saved to `airflow/drift_reports/data_drift_report.html`  
-Open it in your browser:
+Open it in your browser by dragging the file onto a browser tab:
 ```
-D:\work\AI-Enabled\april_week_1\ske-mlops-apr-2026\airflow\drift_reports\data_drift_report.html
+<your-clone-folder>/airflow/drift_reports/data_drift_report.html
 ```
 Take a screenshot of the Evidently drift report showing the test results (passed/failed tests per feature).
 
