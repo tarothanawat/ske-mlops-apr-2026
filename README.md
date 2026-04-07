@@ -133,7 +133,7 @@ Set GitHub Secrets (Settings → Secrets and variables → Actions):
 | `MLFLOW_TRACKING_URI`    | MLflow server URL      |
 | `MLFLOW_S3_ENDPOINT_URL` | MinIO URL              |
 | `AWS_ACCESS_KEY_ID`      | admin                  |
-| `AWS_SECRET_ACCESS_KEY`  | 1qaz2wsx               |
+| `AWS_SECRET_ACCESS_KEY`  |                        |
 
 ```bash
 git init
