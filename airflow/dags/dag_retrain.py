@@ -1,23 +1,7 @@
 import os
 import random
-import numpy as np
-import pandas as pd
 import pytz
 from datetime import datetime, timedelta
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    r2_score,
-    mean_absolute_error,
-    mean_squared_error,
-    mean_absolute_percentage_error,
-)
-
-import mlflow
-from mlflow.models import infer_signature
-from mlflow.tracking import MlflowClient
-
-import synthia as syn
 
 from airflow import DAG
 from airflow.utils.dates import days_ago
@@ -44,6 +28,10 @@ default_args = {
 
 def load_new_data(**context) -> None:
     """Generate synthetic data using GaussianCopula and upload to MinIO."""
+    import numpy as np
+    import pandas as pd
+    import synthia as syn
+
     initial_data = download_from_s3("data", "initial_data.csv")
 
     numeric_cols = initial_data.drop(columns=["quality", "direction", "target"]).columns
@@ -102,6 +90,8 @@ def re_data(**context) -> None:
     Blend new data into the reference dataset (rolling window).
     Only executed when drift is detected — Bug #1 fix.
     """
+    import pandas as pd
+
     dt_string = context["ti"].xcom_pull(key="dt_string")
     new_df    = download_from_s3("data", f"new_data_{dt_string}.csv")
     ref_df    = download_from_s3("data", "data.csv")
@@ -113,6 +103,17 @@ def re_data(**context) -> None:
 
 def re_train(**context) -> None:
     """Retrain all PARAM_GRID combinations on the updated dataset."""
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import (
+        r2_score,
+        mean_absolute_error,
+        mean_squared_error,
+        mean_absolute_percentage_error,
+    )
+    import mlflow
+    from mlflow.models import infer_signature
+
     dt_string         = context["ti"].xcom_pull(key="dt_string")
     num_success_tests = context["ti"].xcom_pull(key="num_success_tests")
     num_failed_tests  = context["ti"].xcom_pull(key="num_failed_tests")
@@ -163,6 +164,8 @@ def register_best_model(**context) -> None:
     Register the lowest-MAPE child run.
     Uses experiment_id + parent_run_id filter
     """
+    import mlflow
+
     experiment_id = context["ti"].xcom_pull(key="experiment_id")
     parent_run_id = context["ti"].xcom_pull(key="parent_run_id")
 
@@ -184,6 +187,8 @@ def register_best_model(**context) -> None:
 
 def promote_model(**context) -> None:
     """Transition the newly registered model version to Production."""
+    from mlflow.tracking import MlflowClient
+
     model_version = context["ti"].xcom_pull(key="model_version")
     client = MlflowClient(tracking_uri=MLFLOW_URI)
     client.transition_model_version_stage(
@@ -219,4 +224,3 @@ with DAG(
     start >> t_load >> t_drift >> t_branch >> [do_nothing, t_redata]
     t_redata >> t_train >> t_reg >> t_promo
     [do_nothing, t_promo] >> end
-    

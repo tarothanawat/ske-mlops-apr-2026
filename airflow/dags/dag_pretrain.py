@@ -1,18 +1,5 @@
-import numpy as np
 import pytz
 from datetime import datetime, timedelta
-
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import (
-    r2_score,
-    mean_absolute_error,
-    mean_squared_error,
-    mean_absolute_percentage_error,
-)
-
-import mlflow
-from mlflow.models import infer_signature
-from mlflow.tracking import MlflowClient
 
 from airflow import DAG
 from airflow.operators.python import PythonOperator
@@ -37,6 +24,17 @@ default_args = {
 
 def pretrain(**context) -> None:
     """Train all hyperparameter combinations and log to MLflow."""
+    import numpy as np
+    from sklearn.model_selection import train_test_split
+    from sklearn.metrics import (
+        r2_score,
+        mean_absolute_error,
+        mean_squared_error,
+        mean_absolute_percentage_error,
+    )
+    import mlflow
+    from mlflow.models import infer_signature
+
     df = download_from_s3("data", "initial_data.csv")
     X  = df.drop(columns=["target"])
     y  = df["target"]
@@ -76,6 +74,9 @@ def pretrain(**context) -> None:
 
 def register_best_model(**context) -> None:
     """Select the lowest-MAPE child run, register and promote to Production."""
+    import mlflow
+    from mlflow.tracking import MlflowClient
+
     experiment_id = context["ti"].xcom_pull(key="experiment_id")
     parent_run_id = context["ti"].xcom_pull(key="parent_run_id")
 
