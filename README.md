@@ -37,9 +37,9 @@ mlops-project/
 
 | Service        | URL                         | Credentials        |
 |----------------|-----------------------------|--------------------|
-| Airflow UI     | http://localhost:8080       | airflow / airflow  |
+| Airflow UI     | http://localhost:8080       |                    |
 | MLflow UI      | http://localhost:5005       | —                  |
-| MinIO Console  | http://localhost:9001       | admin / 1qaz2wsx   |
+| MinIO Console  | http://localhost:9001       |                    |
 | Serving API    | http://localhost:8000/docs  | —                  |
 
 ---
